@@ -1,8 +1,5 @@
 package work.novablog;
 
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -12,19 +9,15 @@ public class PatternAuthentication extends JFrame {
 	private JPanel contentPane;
 
 	/**
-	 * Launch the application.
+	 * START
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					PatternAuthentication frame = new PatternAuthentication();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		try {
+			PatternAuthentication frame = new PatternAuthentication();
+			frame.setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -32,11 +25,15 @@ public class PatternAuthentication extends JFrame {
 	 */
 	public PatternAuthentication() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 563, 515);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		
+		
+		PatternAuthCanvas canvas_1 = new PatternAuthCanvas();
+		canvas_1.setBounds(10, 10, 388, 388);
+		contentPane.add(canvas_1);
 	}
-
 }
