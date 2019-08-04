@@ -14,9 +14,9 @@ import javax.swing.JPanel;
  * 3x3パターンからパスワードを生成する
  * @author nova27
  */
-public class PatternAuthCanvas extends JPanel implements MouseMotionListener{
+public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 	// x=マウスx座標 y=マウスy座標 c_width=横幅の中心 c_height=縦幅の中心 min_width=横幅と縦幅の短い方
-	int x,y,c_width,c_height,min_width;
+	int x, y, c_width, c_height, min_width;
 	/*
 	 * ドットの真ん中座標リスト
 	 *
@@ -52,60 +52,145 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener{
 	// 描画時に呼ばれる
 	public void paint(Graphics g) {
 		// 初期化
-		c_width = getWidth()/2;
-		c_height = getHeight()/2;
+		c_width = getWidth() / 2;
+		c_height = getHeight() / 2;
 		min_width = Math.min(getWidth(), getHeight());
 
 		// r=ドットの半径
-		int r = (int)((double)7/388*min_width);
+		int r = (int) ((double) 7 / 388 * min_width);
 
 		// 背景色で塗りつぶす
-		g.setColor(Color.blue);
+		g.setColor(new Color(49, 124, 183));
 		g.fillRect(0, 0, getWidth(), getHeight());
 
-		/* ドットの描画
-		 *
-		 * ドットID = 4
+		// ドットの描画
+
+		/* ドットID = 0
+		 * ○✕✕
+		 * ✕✕✕
+		 * ✕✕✕
+		 */
+		g.setColor(Color.white);
+		circ_center[0][0] = c_width - (int) ((double) 102 / 388 * min_width);
+		circ_center[0][1] = c_height - (int) ((double) 102 / 388 * min_width);
+		g.fillOval(circ_center[0][0] - r, circ_center[0][1] - r, r * 2, r * 2);
+
+		/* ドットID = 1
+		 * ✕○✕
+		 * ✕✕✕
+		 * ✕✕✕
+		 */
+		circ_center[1][0] = c_width;
+		circ_center[1][1] = c_height - (int) ((double) 102 / 388 * min_width);
+		g.fillOval(circ_center[1][0] - r, circ_center[1][1] - r, r * 2, r * 2);
+
+		/* ドットID = 2
+		 * ✕✕○
+		 * ✕✕✕
+		 * ✕✕✕
+		 */
+		circ_center[2][0] = c_width + (int) ((double) 102 / 388 * min_width);
+		circ_center[2][1] = c_height - (int) ((double) 102 / 388 * min_width);
+		g.fillOval(circ_center[2][0] - r, circ_center[2][1] - r, r * 2, r * 2);
+
+		/* ドットID = 3
+		 * ✕✕✕
+		 * ○✕✕
+		 * ✕✕✕
+		 */
+		circ_center[3][0] = c_width - (int) ((double) 102 / 388 * min_width);
+		circ_center[3][1] = c_height;
+		g.fillOval(circ_center[3][0] - r, circ_center[3][1] - r, r * 2, r * 2);
+
+		/* ドットID = 4
 		 * ✕✕✕
 		 * ✕○✕
 		 * ✕✕✕
 		 */
-		g.setColor(Color.white);
 		circ_center[4][0] = c_width;
 		circ_center[4][1] = c_height;
-		g.fillOval(circ_center[4][0]-r, circ_center[4][1]-r, r*2, r*2);
+		g.fillOval(circ_center[4][0] - r, circ_center[4][1] - r, r * 2, r * 2);
 
-		//ドットID = 1
-		// ✕○✕
-		// ✕✕✕
-		// ✕✕✕
-		g.setColor(Color.white);
-		circ_center[1][0] = c_width;
-		circ_center[1][1] = c_height - (int)((double)102/388*min_width);
-		g.fillOval(circ_center[1][0]-r, circ_center[1][1]-r, r*2, r*2);
+		/* ドットID = 5
+		 * ✕✕✕
+		 * ✕✕○
+		 * ✕✕✕
+		 */
+		circ_center[5][0] = c_width + (int) ((double) 102 / 388 * min_width);
+		circ_center[5][1] = c_height;
+		g.fillOval(circ_center[5][0] - r, circ_center[5][1] - r, r * 2, r * 2);
 
-		if(dragged) {
-			BasicStroke stroke = new BasicStroke(3.0f);
-		    ((Graphics2D)g).setStroke(stroke);
-			g.drawLine(c_width, c_height, x, y);
+		/* ドットID = 6
+		 * ✕✕✕
+		 * ✕✕✕
+		 * ○✕✕
+		 */
+		circ_center[6][0] = c_width - (int) ((double) 102 / 388 * min_width);
+		circ_center[6][1] = c_height + (int) ((double) 102 / 388 * min_width);
+		g.fillOval(circ_center[6][0] - r, circ_center[6][1] - r, r * 2, r * 2);
+
+		/* ドットID = 7
+		 * ✕✕✕
+		 * ✕✕✕
+		 * ✕○✕
+		 */
+		circ_center[7][0] = c_width;
+		circ_center[7][1] = c_height + (int) ((double) 102 / 388 * min_width);
+		g.fillOval(circ_center[7][0] - r, circ_center[7][1] - r, r * 2, r * 2);
+
+		/* ドットID = 8
+		 * ✕✕✕
+		 * ✕✕✕
+		 * ✕✕○
+		 */
+		circ_center[8][0] = c_width + (int) ((double) 102 / 388 * min_width);
+		circ_center[8][1] = c_height + (int) ((double) 102 / 388 * min_width);
+		g.fillOval(circ_center[8][0] - r, circ_center[8][1] - r, r * 2, r * 2);
+
+		// ドラッグ中なら
+		if (dragged) {
+			// 円の中心座標
+			int x = circ_center[Order[0]][0];
+			int y = circ_center[Order[0]][1];
+
+			// 線を引く
+			BasicStroke stroke = new BasicStroke(8.0f);
+			((Graphics2D) g).setStroke(stroke);
+			g.drawLine(x, y, this.x, this.y);
+
+			// 円を描く
+			g.setColor(new Color(7, 153, 6));
+			stroke = new BasicStroke(4.0f);
+			((Graphics2D) g).setStroke(stroke);
+			g.drawOval(x - (int) ((double) 28.5 / 388 * min_width), y - (int) ((double) 28.5 / 388 * min_width),
+					(int) ((double) 57 / 388 * min_width), (int) ((double) 57 / 388 * min_width));
+
+			f_dragged = false;
 		}
 	}
 
+	// マウスがドラッグされているときに呼ばれる
 	public void mouseDragged(MouseEvent arg0) {
-		// TODO 自動生成されたメソッド・スタブ
 		Point point = arg0.getPoint();
 		x = point.x;
 		y = point.y;
 
-		if(f_dragged) {
-			if (Math.pow(circ_center[4][0]-x, 2) + Math.pow(circ_center[4][1]-y, 2)< Math.pow(22.5/388*min_width, 2)) {
-				dragged = true;
-				f_dragged = false;
+		if (f_dragged) {
+			// ドラッグが初めてのとき
+			for (int i = 0; i <= 8; i++) {
+				// ドットの範囲内に入っているかどうか
+				if (Math.pow(circ_center[i][0] - x, 2) + Math.pow(circ_center[i][1] - y, 2) < Math
+						.pow(22.5 / 388 * min_width, 2)) {
+					dragged = true;
+					f_dragged = false;
 
-				Order[0] = 4;
-				repaint();
+					Order[0] = i;
+					// 再描画
+					repaint();
+				}
 			}
-		}else {
+
+		} else {
 			repaint();
 		}
 
