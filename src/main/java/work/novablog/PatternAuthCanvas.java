@@ -38,6 +38,8 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 	boolean dragged;
 	// ドラッグ最初か？ true=ドラッグ最初である
 	boolean f_dragged;
+	// パターン作成し終わったか？ true=し終わった
+	boolean stop;
 
 	// 初期化
 	public PatternAuthCanvas() {
@@ -45,6 +47,12 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 		y = 0;
 		dragged = false;
 		f_dragged = true;
+		stop = false;
+		for (int i = 0; i <= 8; i++) {
+			// オーダーを初期化
+			// 値が代入されていないときは-1に
+			Order[i] = -1;
+		}
 
 		addMouseMotionListener(this);
 	}
@@ -149,23 +157,42 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 
 		// ドラッグ中なら
 		if (dragged) {
-			// 円の中心座標
-			int x = circ_center[Order[0]][0];
-			int y = circ_center[Order[0]][1];
+			int j;
+			for (j = 0; Order[j] != -1; j++) {
+				// ドット間の線を引く
+				BasicStroke stroke = new BasicStroke(8.0f);
+				((Graphics2D) g).setStroke(stroke);
+				if (j != 0) {
+					int from_x = circ_center[Order[j - 1]][0];
+					int from_y = circ_center[Order[j - 1]][1];
 
-			// 線を引く
+					int to_x = circ_center[Order[j]][0];
+					int to_y = circ_center[Order[j]][1];
+
+					g.drawLine(from_x, from_y, to_x, to_y);
+				}
+
+				// 円を描く
+				g.setColor(new Color(7, 153, 6));
+				stroke = new BasicStroke(4.0f);
+				((Graphics2D) g).setStroke(stroke);
+				g.drawOval(circ_center[Order[j]][0] - (int) ((double) 28.5 / 388 * min_width),
+						circ_center[Order[j]][1] - (int) ((double) 28.5 / 388 * min_width),
+						(int) ((double) 57 / 388 * min_width), (int) ((double) 57 / 388 * min_width));
+				if(j == 8) {
+					j++;
+					break;
+				}
+			}
+			// 円の中心座標
+			int x = circ_center[Order[j - 1]][0];
+			int y = circ_center[Order[j - 1]][1];
+
+			// ドットからマウスまでの線を引く
 			BasicStroke stroke = new BasicStroke(8.0f);
 			((Graphics2D) g).setStroke(stroke);
 			g.drawLine(x, y, this.x, this.y);
 
-			// 円を描く
-			g.setColor(new Color(7, 153, 6));
-			stroke = new BasicStroke(4.0f);
-			((Graphics2D) g).setStroke(stroke);
-			g.drawOval(x - (int) ((double) 28.5 / 388 * min_width), y - (int) ((double) 28.5 / 388 * min_width),
-					(int) ((double) 57 / 388 * min_width), (int) ((double) 57 / 388 * min_width));
-
-			f_dragged = false;
 		}
 	}
 
@@ -174,9 +201,19 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 		Point point = arg0.getPoint();
 		x = point.x;
 		y = point.y;
+		
+		if(stop) {
+			return;
+		}
 
 		if (f_dragged) {
 			// ドラッグが初めてのとき
+			for (int i = 0; i <= 8; i++) {
+				// オーダーを初期化
+				// 値が代入されていないときは-1に
+				Order[i] = -1;
+			}
+			
 			for (int i = 0; i <= 8; i++) {
 				// ドットの範囲内に入っているかどうか
 				if (Math.pow(circ_center[i][0] - x, 2) + Math.pow(circ_center[i][1] - y, 2) < Math
@@ -185,22 +222,40 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 					f_dragged = false;
 
 					Order[0] = i;
-					// 再描画
-					repaint();
 				}
 			}
 
 		} else {
-			repaint();
+			// ドラッグが2個目以降なら
+			for (int i = 0; i <= 8; i++) {
+				// ドットの範囲内に入っているかどうか
+				if (Math.pow(circ_center[i][0] - x, 2) + Math.pow(circ_center[i][1] - y, 2) < Math
+						.pow(22.5 / 388 * min_width, 2)) {
+
+					int j;
+					for (j = 0; j <= 8; j++) {
+						// すでにオーダーに入っているドットだった場合
+						if (Order[j] == i) {
+							repaint();
+							return;
+						}
+					}
+					for (j = 0; Order[j] != -1; j++);
+					Order[j] = i;
+				}
+			}
 		}
+
+		repaint();
 
 	}
 
 	public void mouseMoved(MouseEvent arg0) {
-		// TODO 自動生成されたメソッド・スタブ
+		// 初期化
+		if(dragged) {
+			stop = true;
+		}
 		dragged = false;
 		f_dragged = true;
-
-		repaint();
 	}
 }
