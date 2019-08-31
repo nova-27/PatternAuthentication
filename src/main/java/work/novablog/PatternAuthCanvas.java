@@ -7,12 +7,15 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 import javax.swing.JPanel;
 
 /**
  * 3x3パターンからパスワードを生成する
- * @author nova27
  */
 public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 	// x=マウスx座標 y=マウスy座標 c_width=横幅の中心 c_height=縦幅の中心 min_width=横幅と縦幅の短い方
@@ -40,20 +43,28 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 	boolean f_dragged;
 	// パターン作成し終わったか？ true=し終わった
 	boolean stop;
+	// イベント処理
+	PatternEvent p_event;
+	// 一致確認用パスワード
+	String passwd;
+	// 残り試行可能回数
+	int remaining;
 
-	// 初期化
-	public PatternAuthCanvas() {
-		x = 0;
-		y = 0;
-		dragged = false;
-		f_dragged = true;
-		stop = false;
-		for (int i = 0; i <= 8; i++) {
-			// オーダーを初期化
-			// 値が代入されていないときは-1に
-			Order[i] = -1;
-		}
+	public PatternAuthCanvas(PatternEvent p_event) {
+		this.p_event = p_event;
+		passwd = "";
+		remaining = -1;
 
+		Init();
+		addMouseMotionListener(this);
+	}
+
+	public PatternAuthCanvas(PatternEvent p_event, String passwd, int count) {
+		this.p_event = p_event;
+		this.passwd = passwd;
+		this.remaining = count;
+
+		Init();
 		addMouseMotionListener(this);
 	}
 
@@ -179,7 +190,7 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 				g.drawOval(circ_center[Order[j]][0] - (int) ((double) 28.5 / 388 * min_width),
 						circ_center[Order[j]][1] - (int) ((double) 28.5 / 388 * min_width),
 						(int) ((double) 57 / 388 * min_width), (int) ((double) 57 / 388 * min_width));
-				if(j == 8) {
+				if (j == 8) {
 					j++;
 					break;
 				}
@@ -188,10 +199,12 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 			int x = circ_center[Order[j - 1]][0];
 			int y = circ_center[Order[j - 1]][1];
 
-			// ドットからマウスまでの線を引く
-			BasicStroke stroke = new BasicStroke(8.0f);
-			((Graphics2D) g).setStroke(stroke);
-			g.drawLine(x, y, this.x, this.y);
+			if (j != 9) {
+				// ドットからマウスまでの線を引く
+				BasicStroke stroke = new BasicStroke(8.0f);
+				((Graphics2D) g).setStroke(stroke);
+				g.drawLine(x, y, this.x, this.y);
+			}
 
 		}
 	}
@@ -201,8 +214,8 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 		Point point = arg0.getPoint();
 		x = point.x;
 		y = point.y;
-		
-		if(stop) {
+
+		if (stop) {
 			return;
 		}
 
@@ -213,7 +226,7 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 				// 値が代入されていないときは-1に
 				Order[i] = -1;
 			}
-			
+
 			for (int i = 0; i <= 8; i++) {
 				// ドットの範囲内に入っているかどうか
 				if (Math.pow(circ_center[i][0] - x, 2) + Math.pow(circ_center[i][1] - y, 2) < Math
@@ -240,7 +253,9 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 							return;
 						}
 					}
-					for (j = 0; Order[j] != -1; j++);
+					// オーダーに追加
+					for (j = 0; Order[j] != -1; j++)
+						;
 					Order[j] = i;
 				}
 			}
@@ -252,10 +267,88 @@ public class PatternAuthCanvas extends JPanel implements MouseMotionListener {
 
 	public void mouseMoved(MouseEvent arg0) {
 		// 初期化
-		if(dragged) {
+		if (dragged) {
+			//パターン終了処理
 			stop = true;
+			if (remaining == -1 || Objects.equals(passwd, "")) {
+				//パスワード作成の場合
+				p_event.create_pattern();
+			} else {
+				//パスワード認証の場合
+				if (Objects.deepEquals(Password(), passwd)) {
+					//パスワードが一致した場合
+					p_event.auth_end(true);
+					return;
+				} else {
+					//パスワードが不一致の場合
+					remaining--;
+					if (remaining == 0) {
+						//残り0回の場合
+						p_event.auth_end(false);
+						return;
+					}
+
+					p_event.wrong_passwd(remaining);
+					Init();
+					repaint();
+				}
+			}
 		}
 		dragged = false;
 		f_dragged = true;
+	}
+
+	// 初期化
+	private void Init() {
+		x = 0;
+		y = 0;
+		dragged = false;
+		f_dragged = true;
+		stop = false;
+		for (int i = 0; i <= 8; i++) {
+			// オーダーを初期化
+			// 値が代入されていないときは-1に
+			Order[i] = -1;
+		}
+	}
+
+	// パターンからパスワードを生成する
+	private String Password() {
+		if (stop == false) {
+			return "error";
+		}
+
+		// int配列をstringとして結合
+		String order = "";
+		for (int i = 0; Order[i] != -1; i++) {
+			order += Order[i];
+			if (i == 8) {
+				break;
+			}
+		}
+
+		// オーダー(string)からMD5(パスワード)を生成
+		String passwd = "";
+		try {
+			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			byte[] result = md5.digest(order.getBytes());
+			BigInteger big_int_result = new BigInteger(1, result);
+			passwd = new String(String.format("%032x", big_int_result));
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+
+		return passwd;
+	}
+
+	// パターンを作成し直す(リセット)
+	public void reset() {
+		Init();
+		repaint();
+	}
+
+	//終了処理
+	public void end_process() {
+		p_event.create_end(Password());
 	}
 }
