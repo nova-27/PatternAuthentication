@@ -1,4 +1,4 @@
 PatternAuthentication
 ====
 
-作者 : Yuto Matsui
+作者 : nova27
